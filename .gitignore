@@ -17,3 +17,4 @@ tags
 vendor/*
 release/*
 !vendor/vendor.json
+go.sum
