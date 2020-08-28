@@ -15,31 +15,37 @@ var (
 
 // SearchAuthors returns all novels resource that you serached
 func SearchAuthors(c *gin.Context) {
-	var currentRule config.NovelRule
-	var ok bool
 	novelName := c.Param("name")
-	novelSource := c.Param("source")
-	if novelName != "" {
-		currentRule, ok = NovelsRulesMap[novelSource+"_1"]
-		log.Println(ok)
-		if ok == false {
-			currentRule, ok = NovelsRulesMap[novelSource]
-		}
-		log.Println(ok)
-		if ok {
-			resultData, err := common.FetchHtml(novelName, currentRule)
-			if err != nil {
-				log.Println("Request URL error", err)
-				c.JSON(http.StatusOK, gin.H{"statue": 0, "msg": "Request error"})
-			} else {
-				c.JSON(http.StatusOK, gin.H{"status": 1, "info": resultData})
-			}
-		} else {
-			c.JSON(http.StatusOK, gin.H{"statue": 0, "msg": "Parameter error"})
-		}
-	} else {
+	if novelName == "" {
 		c.JSON(http.StatusOK, gin.H{"statue": 0, "msg": "Parameter name can't be empty"})
+		return
 	}
+
+	novelSource := c.Param("source")
+	if novelSource == "" {
+		c.JSON(http.StatusOK, gin.H{"statue": 0, "msg": "Parameter name can't be empty"})
+		return
+	}
+	
+	var ok bool
+	var currentRule config.NovelRule
+
+	currentRule, ok = NovelsRulesMap[novelSource+"_1"]
+	if ok == false {
+		currentRule, ok = NovelsRulesMap[novelSource]
+		if !ok {
+			c.JSON(http.StatusOK, gin.H{"statue": 0, "msg": "Parameter error"})
+			return
+		}
+	}
+
+	resultData, err := common.FetchHtml(novelName, currentRule)
+	if err != nil {
+		log.Println("Request URL error", err)
+		c.JSON(http.StatusOK, gin.H{"statue": 0, "msg": "Request error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": 1, "info": resultData})
 }
 
 // SearchNovels returns all novels resource that you serached
